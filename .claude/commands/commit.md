@@ -109,4 +109,4 @@ refactor(common): 优化 Base 架构的状态管理逻辑
 1. 运行 `git diff --cached` 获取已暂存的变更内容
 2. 如果暂存区为空，提示用户需要先 `git add` 文件
 3. 分析变更并生成符合规范的中文 commit message
-4. 输出生成的 message 并询问用户是否需要调整或直接提交
+4. 输出生成的 message 并直接提交
