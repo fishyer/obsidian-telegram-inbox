@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(openspec list)",
+      "Bash(openspec list --specs)",
+      "Bash(mkdir -p /Users/v-yutianran/project/task-master/packages/ruyuan-flutter/openspec/changes/add-streaming-chat-test/specs/network-testing)",
+      "Bash(openspec validate add-streaming-chat-test --strict)",
+      "Bash(openspec show add-streaming-chat-test)",
+      "Bash(openspec diff add-streaming-chat-test)",
+      "Bash(flutter pub get)",
+      "Bash(flutter test test/http_util_test.dart --name \"Real API Integration Tests\")",
+      "Bash(mkdir -p .wiki)",
+      "Bash(flutter pub run build_runner build:*)",
+      "Bash(dart run pigeon:*)",
+      "Bash(flutter run:*)",
+      "Bash(flutter analyze:*)",
+      "mcp__figma-dev-mode-mcp-server__get_screenshot",
+      "mcp__figma-dev-mode-mcp-server__get_design_context",
+      "Bash(dart:*)",
+      "WebSearch",
+      "WebFetch(domain:dart.dev)",
+      "Bash(claude mcp remove:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp get:*)",
+      "Bash(claude mcp list:*)",
+      "Bash(npx chrome-devtools-mcp@latest:*)",
+      "mcp__flutter-dart__analyze_files",
+      "mcp__filesystem__list_directory",
+      "mcp__flutter-dart__dart_format",
+      "Bash(flutter pub add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "filesystem",
+    "sequential-thinking",
+    "fetch",
+    "time",
+    "figma-dev-mode-mcp-server"
+  ]
+}
