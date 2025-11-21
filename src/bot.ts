@@ -4,10 +4,11 @@ import { insertMessage, insertMessageAtTop } from "./io";
 import type { TGInboxSettings } from "./settings";
 import { downloadAndSaveFile } from "./utils/download";
 import type { File, Message } from "grammy/types";
-import { generateContentFromTemplate } from "./utils/template";
+import { generateContentFromTemplate, buildMsgData } from "./utils/template";
 import { getExt, getFileUrl, getSavePath } from "./utils/file";
 import { Mutex } from "async-mutex";
 import { MessageUpdate } from "./type";
+import { transformMessageWithAI } from "./utils/ai";
 
 export class TelegramBot {
   bot: Bot;
@@ -100,7 +101,19 @@ export class TelegramBot {
 
   private setupMessageHandlers(settings: TGInboxSettings) {
     this.bot.on(["message:text", "channel_post:text"], async (ctx) => {
-      const content = generateContentFromTemplate(ctx.msg, settings)
+      let content: string;
+
+      // Apply AI transformation if enabled
+      if (settings.ai_enabled) {
+        const messageData = buildMsgData(ctx.msg, settings);
+        const aiTitle = await transformMessageWithAI(messageData, settings);
+        // Format: - AI Title\n\t- Original content (with multi-line indentation)
+        const formattedBody = this.formatMultiLineContent(messageData.text);
+        content = `- ${aiTitle}\n\t- ${formattedBody}`;
+      } else {
+        content = generateContentFromTemplate(ctx.msg, settings);
+      }
+
       await this.insertMessageToVault(content, ctx.msg)
         .then(async _ => {
           try {
@@ -116,7 +129,18 @@ export class TelegramBot {
     });
 
     this.bot.on(["message:media", "channel_post:media"], async (ctx) => {
-      let content = generateContentFromTemplate(ctx.msg, settings);
+      let content: string;
+
+      // Apply AI transformation if enabled
+      if (settings.ai_enabled) {
+        const messageData = buildMsgData(ctx.msg, settings);
+        const aiTitle = await transformMessageWithAI(messageData, settings);
+        // Format: - AI Title\n\t- Original content (with multi-line indentation)
+        const formattedBody = this.formatMultiLineContent(messageData.text);
+        content = `- ${aiTitle}\n\t- ${formattedBody}`;
+      } else {
+        content = generateContentFromTemplate(ctx.msg, settings);
+      }
 
       if (settings.download_media) {
         const file = await ctx.getFile();
@@ -152,6 +176,35 @@ export class TelegramBot {
           ctx.reply(`Failed to insert media message to vault. Error: ${err.message}`, err);
         });
     });
+  }
+
+  /**
+   * Format multi-line content with proper indentation for nested list items
+   */
+  private formatMultiLineContent(text: string): string {
+    if (!text.includes('\n')) {
+      return this.cleanLineContent(text);
+    }
+
+    const lines = text.split('\n');
+    const firstLine = this.cleanLineContent(lines[0]);
+    const restLines = lines.slice(1)
+      .filter(line => line.trim()) // Remove empty lines
+      .map(line => `\t\t${this.cleanLineContent(line)}`)
+      .join('\n');
+
+    return restLines ? `${firstLine}\n${restLines}` : firstLine;
+  }
+
+  /**
+   * Clean line content by removing leading # symbols (to avoid markdown header conflicts)
+   */
+  private cleanLineContent(line: string): string {
+    const stripped = line.trimStart();
+    if (stripped.startsWith('#')) {
+      return stripped.replace(/^#+\s*/, '');
+    }
+    return line;
   }
 
   private generateFilename(msg: Message, file: File): string {

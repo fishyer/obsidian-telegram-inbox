@@ -18,6 +18,11 @@ export interface TGInboxSettings {
   remove_formatting: boolean;
   run_after_sync: boolean;
   daily_note_time_cutoff: string; // Format: "HH:MM" (24-hour format)
+  ai_enabled: boolean;
+  ai_prompt: string;
+  openai_api_base_url: string;
+  openai_api_key: string;
+  ai_model: string;
 }
 
 export class TGInboxSettingTab extends PluginSettingTab {
@@ -152,6 +157,81 @@ export class TGInboxSettingTab extends PluginSettingTab {
       });
 
     const templateValidStatus = containerEl.createDiv();
+
+    new Setting(containerEl).setName("AI Configuration").setHeading();
+
+    new Setting(containerEl)
+      .setName("Enable AI transformation")
+      .setDesc("Use AI to automatically transform and optimize message content")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.ai_enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.ai_enabled = value;
+            await this.plugin.saveSettings();
+            this.display();
+          })
+      );
+
+    if (this.plugin.settings.ai_enabled) {
+      new Setting(containerEl)
+        .setName("OpenAI API Base URL")
+        .setDesc("Base URL for OpenAI API (e.g., https://api.openai.com/v1 or https://openrouter.ai/api/v1)")
+        .addText((text) =>
+          text
+            .setPlaceholder("https://api.openai.com/v1")
+            .setValue(this.plugin.settings.openai_api_base_url)
+            .onChange(async (value) => {
+              this.plugin.settings.openai_api_base_url = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("OpenAI API Key")
+        .setDesc("Your OpenAI API key")
+        .addText((text) => {
+          text
+            .setPlaceholder("sk-...")
+            .setValue(this.plugin.settings.openai_api_key)
+            .onChange(async (value) => {
+              this.plugin.settings.openai_api_key = value;
+              await this.plugin.saveSettings();
+            });
+          text.inputEl.type = "password";
+        });
+
+      new Setting(containerEl)
+        .setName("AI Model")
+        .setDesc("Model to use for AI transformation (e.g., gpt-3.5-turbo, gpt-4)")
+        .addText((text) =>
+          text
+            .setPlaceholder("gpt-3.5-turbo")
+            .setValue(this.plugin.settings.ai_model)
+            .onChange(async (value) => {
+              this.plugin.settings.ai_model = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      const ai_prompt_desc = document.createDocumentFragment();
+      ai_prompt_desc.append(
+        "Customize the AI prompt template. You can use Mustache variables like {{text}}, {{name}}, {{date}}, etc."
+      );
+
+      new Setting(containerEl)
+        .setName("AI Prompt")
+        .setDesc(ai_prompt_desc)
+        .addTextArea((textArea) => {
+          textArea.inputEl.rows = 8;
+          textArea
+            .setValue(this.plugin.settings.ai_prompt)
+            .onChange(async (value) => {
+              this.plugin.settings.ai_prompt = value;
+              await this.plugin.saveSettings();
+            });
+        });
+    }
 
     new Setting(containerEl).setName("Advanced").setHeading();
 

@@ -19,6 +19,31 @@ const DEFAULT_SETTINGS: TGInboxSettings = {
   remove_formatting: false,
   run_after_sync: true,
   daily_note_time_cutoff: "00:00",
+  ai_enabled: false,
+  ai_prompt: `根据以下Telegram消息内容，生成一个带标签的标题。
+
+消息内容：{{{text}}}
+发送人：{{name}}
+
+要求：
+1. 标题前面要有1-3个标签（2-4个字左右）以表示消息的类别
+2. 格式：#tag1 #tag2 #tag3 标题
+3. 标签和标题之间用空格分隔
+4. 标签可以是主题、情感、用途等方面的关键词，帮助快速识别消息内容
+5. 标题要简洁明了，能够概括消息的主要内容
+6. 标题总长度不超过50个字符，不要有特殊字符
+7. 如果消息内容为空或无意义，请生成 #待定 {{name}}
+
+示例：
+#编程开发 #工具 #方法论 具体标题
+#学习心得 #记忆力 #方法论 间隔重复与记忆巩固的挑战
+#幸福 #心理 #感悟 记录"小确幸"，降低抑郁倾向
+#书籍推荐 #投资心理 #财富自由 推荐金钱心理学
+
+请直接返回带标签的标题，不要其他内容，不要用\`\`包裹。`,
+  openai_api_base_url: "https://api.openai.com/v1/chat/completions",
+  openai_api_key: "",
+  ai_model: "gpt-3.5-turbo",
 };
 
 export default class TGInbox extends Plugin {
