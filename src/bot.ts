@@ -102,11 +102,12 @@ export class TelegramBot {
   private setupMessageHandlers(settings: TGInboxSettings) {
     this.bot.on(["message:text", "channel_post:text"], async (ctx) => {
       let content: string;
+      let aiTitle: string | null = null;
 
       // Apply AI transformation if enabled
       if (settings.ai_enabled) {
         const messageData = buildMsgData(ctx.msg, settings);
-        const aiTitle = await transformMessageWithAI(messageData, settings);
+        aiTitle = await transformMessageWithAI(messageData, settings);
         // Format: - AI Title\n\t- Original content (with multi-line indentation)
         const formattedBody = this.formatMultiLineContent(messageData.text);
         content = `- ${aiTitle}\n\t- ${formattedBody}`;
@@ -118,8 +119,13 @@ export class TelegramBot {
         .then(async _ => {
           try {
             await ctx.react("❤");
+
+            // Reply with AI generated content in Telegram if enabled
+            if (settings.ai_enabled && settings.ai_reply_in_telegram && aiTitle) {
+              await ctx.reply(aiTitle);
+            }
           } catch (reactionErr) {
-            console.error("Failed to set reaction");
+            console.error("Failed to set reaction or reply");
           }
         })
         .catch((err) => {
@@ -130,11 +136,12 @@ export class TelegramBot {
 
     this.bot.on(["message:media", "channel_post:media"], async (ctx) => {
       let content: string;
+      let aiTitle: string | null = null;
 
       // Apply AI transformation if enabled
       if (settings.ai_enabled) {
         const messageData = buildMsgData(ctx.msg, settings);
-        const aiTitle = await transformMessageWithAI(messageData, settings);
+        aiTitle = await transformMessageWithAI(messageData, settings);
         // Format: - AI Title\n\t- Original content (with multi-line indentation)
         const formattedBody = this.formatMultiLineContent(messageData.text);
         content = `- ${aiTitle}\n\t- ${formattedBody}`;
@@ -167,8 +174,13 @@ export class TelegramBot {
         .then(async _ => {
           try {
             await ctx.react("❤");
+
+            // Reply with AI generated content in Telegram if enabled
+            if (settings.ai_enabled && settings.ai_reply_in_telegram && aiTitle) {
+              await ctx.reply(aiTitle);
+            }
           } catch (reactionErr) {
-            console.error("Failed to set reaction");
+            console.error("Failed to set reaction or reply");
           }
         })
         .catch((err) => {

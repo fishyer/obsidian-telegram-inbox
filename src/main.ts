@@ -44,6 +44,7 @@ const DEFAULT_SETTINGS: TGInboxSettings = {
   openai_api_base_url: "https://api.openai.com/v1/chat/completions",
   openai_api_key: "",
   ai_model: "gpt-3.5-turbo",
+  ai_reply_in_telegram: false,
 };
 
 export default class TGInbox extends Plugin {

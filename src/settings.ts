@@ -23,6 +23,7 @@ export interface TGInboxSettings {
   openai_api_base_url: string;
   openai_api_key: string;
   ai_model: string;
+  ai_reply_in_telegram: boolean;
 }
 
 export class TGInboxSettingTab extends PluginSettingTab {
@@ -174,6 +175,18 @@ export class TGInboxSettingTab extends PluginSettingTab {
       );
 
     if (this.plugin.settings.ai_enabled) {
+      new Setting(containerEl)
+        .setName("Reply AI content in Telegram")
+        .setDesc("Send AI generated content back to Telegram as a reply message")
+        .addToggle((toggle) =>
+          toggle
+            .setValue(this.plugin.settings.ai_reply_in_telegram)
+            .onChange(async (value) => {
+              this.plugin.settings.ai_reply_in_telegram = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
       new Setting(containerEl)
         .setName("OpenAI API Base URL")
         .setDesc("Base URL for OpenAI API (e.g., https://api.openai.com/v1 or https://openrouter.ai/api/v1)")
