@@ -9,6 +9,8 @@ import { getExt, getFileUrl, getSavePath } from "./utils/file";
 import { Mutex } from "async-mutex";
 import { MessageUpdate } from "./type";
 import { transformMessageWithAI } from "./utils/ai";
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { SocksProxyAgent } from 'socks-proxy-agent';
 
 export class TelegramBot {
   bot: Bot;
@@ -23,7 +25,21 @@ export class TelegramBot {
     const restrictToAllowedUsers = this.createRestrictToAllowedUsersMiddleware(settings);
     const recordUpdateId = this.createRecordUpdateIdMiddleware();
 
-    this.bot = new Bot(settings.token);
+    // Configure proxy if enabled
+    const botOptions: any = {};
+    if (settings.proxy_enabled && settings.proxy_host && settings.proxy_port) {
+      const proxyUrl = this.buildProxyUrl(settings);
+      const proxyAgent = this.createProxyAgent(proxyUrl, settings.proxy_protocol);
+
+      botOptions.client = {
+        baseFetchConfig: {
+          agent: proxyAgent,
+          compress: true,
+        },
+      };
+    }
+
+    this.bot = new Bot(settings.token, botOptions);
 
     if (settings.disable_auto_reception) {
       this.bot.init();
@@ -224,6 +240,28 @@ export class TelegramBot {
     const dateStr = moment(msg.date * 1000).format("YYYYMMDD");
     const extension = getExt(file.file_path || "");
     return `${dateStr}-${message_id}.${extension}`;
+  }
+
+  private buildProxyUrl(settings: TGInboxSettings): string {
+    const protocol = settings.proxy_protocol === 'http' ? 'http' :
+                     settings.proxy_protocol === 'socks5' ? 'socks5' : 'socks4';
+
+    let auth = '';
+    if (settings.proxy_username && settings.proxy_password) {
+      auth = `${settings.proxy_username}:${settings.proxy_password}@`;
+    }
+
+    return `${protocol}://${auth}${settings.proxy_host}:${settings.proxy_port}`;
+  }
+
+  private createProxyAgent(proxyUrl: string, protocol: "http" | "socks5" | "socks4"): any {
+    console.log(`Creating proxy agent with URL: ${proxyUrl.replace(/:[^:@]+@/, ':***@')}`);
+
+    if (protocol === 'http') {
+      return new HttpsProxyAgent(proxyUrl);
+    } else {
+      return new SocksProxyAgent(proxyUrl);
+    }
   }
 
   private async insertMessageToVault(content: string, msg: MessageUpdate): Promise<void> {

@@ -45,6 +45,12 @@ const DEFAULT_SETTINGS: TGInboxSettings = {
   openai_api_key: "",
   ai_model: "gpt-3.5-turbo",
   ai_reply_in_telegram: false,
+  proxy_enabled: false,
+  proxy_protocol: "http",
+  proxy_host: "",
+  proxy_port: "",
+  proxy_username: "",
+  proxy_password: "",
 };
 
 export default class TGInbox extends Plugin {

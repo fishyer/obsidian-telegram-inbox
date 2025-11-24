@@ -33,7 +33,9 @@
 		"@telegraf/entity": "^0.5.0",
 		"async-mutex": "^0.5.0",
 		"grammy": "^1.36.3",
+		"https-proxy-agent": "^7.0.6",
 		"mustache": "4.1.0",
-		"obsidian-daily-notes-interface": "^0.9.4"
+		"obsidian-daily-notes-interface": "^0.9.4",
+		"socks-proxy-agent": "^8.0.5"
 	}
 }

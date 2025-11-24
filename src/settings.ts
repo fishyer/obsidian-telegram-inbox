@@ -24,6 +24,12 @@ export interface TGInboxSettings {
   openai_api_key: string;
   ai_model: string;
   ai_reply_in_telegram: boolean;
+  proxy_enabled: boolean;
+  proxy_protocol: "http" | "socks5" | "socks4";
+  proxy_host: string;
+  proxy_port: string;
+  proxy_username: string;
+  proxy_password: string;
 }
 
 export class TGInboxSettingTab extends PluginSettingTab {
@@ -247,6 +253,89 @@ export class TGInboxSettingTab extends PluginSettingTab {
     }
 
     new Setting(containerEl).setName("Advanced").setHeading();
+
+    new Setting(containerEl)
+      .setName("Enable Proxy")
+      .setDesc("Enable proxy for Telegram API connections (required in some regions)")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.proxy_enabled)
+          .onChange(async (value) => {
+            this.plugin.settings.proxy_enabled = value;
+            await this.plugin.saveSettings();
+            this.display();
+          })
+      );
+
+    if (this.plugin.settings.proxy_enabled) {
+      new Setting(containerEl)
+        .setName("Proxy Protocol")
+        .setDesc("Select the proxy protocol type")
+        .addDropdown((dropdown) =>
+          dropdown
+            .addOption("http", "HTTP/HTTPS")
+            .addOption("socks5", "SOCKS5")
+            .addOption("socks4", "SOCKS4")
+            .setValue(this.plugin.settings.proxy_protocol)
+            .onChange(async (value: "http" | "socks5" | "socks4") => {
+              this.plugin.settings.proxy_protocol = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("Proxy Host")
+        .setDesc("Proxy server address (e.g., 127.0.0.1 or proxy.example.com)")
+        .addText((text) =>
+          text
+            .setPlaceholder("127.0.0.1")
+            .setValue(this.plugin.settings.proxy_host)
+            .onChange(async (value) => {
+              this.plugin.settings.proxy_host = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("Proxy Port")
+        .setDesc("Proxy server port (e.g., 7897, 1080)")
+        .addText((text) =>
+          text
+            .setPlaceholder("7897")
+            .setValue(this.plugin.settings.proxy_port)
+            .onChange(async (value) => {
+              this.plugin.settings.proxy_port = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("Proxy Username")
+        .setDesc("Optional: Username for proxy authentication")
+        .addText((text) =>
+          text
+            .setPlaceholder("username")
+            .setValue(this.plugin.settings.proxy_username)
+            .onChange(async (value) => {
+              this.plugin.settings.proxy_username = value;
+              await this.plugin.saveSettings();
+            })
+        );
+
+      new Setting(containerEl)
+        .setName("Proxy Password")
+        .setDesc("Optional: Password for proxy authentication")
+        .addText((text) => {
+          text
+            .setPlaceholder("password")
+            .setValue(this.plugin.settings.proxy_password)
+            .onChange(async (value) => {
+              this.plugin.settings.proxy_password = value;
+              await this.plugin.saveSettings();
+            });
+          text.inputEl.type = "password";
+        });
+    }
 
     new Setting(containerEl)
       .setName("Reverse order")
